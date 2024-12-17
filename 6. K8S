@@ -68,7 +68,8 @@ Container or virtual machine manager, such as: Docker.
 
 Kubectl is the command line tool for k8s
 if we want to execute commands we need to use kubectl.
-
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+minikube
 SETUP:
 sudo apt update -y
 sudo apt upgrade -y
@@ -84,6 +85,71 @@ sudo curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.t
 sudo echo "$(cat kubectl.sha256) kubectl" | sha256sum --check
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 sudo minikube start --driver=docker --force
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
++++++++++++kops+++++++++++++
+#vim .bashrc
+#export PATH=$PATH:/usr/local/bin/
+#source .bashrc
+
+
+#! /bin/bash
+aws configure
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+wget https://github.com/kubernetes/kops/releases/download/v1.25.0/kops-linux-amd64
+chmod +x kops-linux-amd64 kubectl
+mv kubectl /usr/local/bin/kubectl
+mv kops-linux-amd64 /usr/local/bin/kops
+
+aws s3api create-bucket --bucket rahamssshaik09.k8s.local --region us-east-1
+aws s3api put-bucket-versioning --bucket rahamssshaik09.k8s.local --region us-east-1 --versioning-configuration Status=Enabled
+export KOPS_STATE_STORE=s3://rahamssshaik09.k8s.local
+
+kops create cluster --name rahams.k8s.local --zones us-east-1a --master-count=1 --master-size t2.medium --node-count=2 --node-size t2.micro
+kops update cluster --name rahams.k8s.local --yes --admin
+
+kubectl get no
+kops get cluster
+
+
+Suggestions:
+ * list clusters with: kops get cluster
+ * edit this cluster with: kops edit cluster rahams.k8s.local
+ * edit your node instance group: kops edit ig --name=rahams.k8s.local nodes-us-east-1a
+ * edit your master instance group: kops edit ig --name=rahams.k8s.local master-us-east-1a
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+++++++++++++++++EKS+++++++++++++
+sudo curl --silent –location 
+"https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname s)_amd64.tar.gz" | tar xz -C /tmp 
+sudo mv /tmp/eksctl /usr/local/bin 
+# EKS cluster Setup Process  
+  # Create an IAM Role and attache it to EC2 instance     
+   `Note: create IAM user with programmatic access if your bootstrap system is outside of AWS`    
+   IAM user should have access to    
+   IAM    
+   EC2    
+   VPC     
+   CloudFormation 
+  # Create your cluster and nodes  
+   ```sh    eksctl create cluster --name cluster-name  \ 
+   --region region-name \ 
+   --node-type instance-type \ 
+   --nodes-min 2 \ 
+   --nodes-max 2 \  
+   --zones <AZ-1>,<AZ-2> 
+    
+   example: 
+   eksctl create cluster --name headless \ 
+      --region ap-south-1 \ 
+   --node-type t2.small \ 
+ 
+# after create cluster to update it 
+ aws eks update-kubeconfig --region <region> --name <cluster name> 
+ ex: aws eks update-kubeconfig --region ap-south-1 --name naresh  # ------To delete the EKS clsuter    
+ eksctl delete cluster naresh --region ap-south-1 
+
+
+
 
 POD:
 It is a smallest unit of deployment in K8's.
