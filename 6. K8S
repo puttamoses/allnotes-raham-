@@ -119,40 +119,41 @@ Suggestions:
  * edit your master instance group: kops edit ig --name=rahams.k8s.local master-us-east-1a
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 ++++++++++++++++EKS+++++++++++++
-#==============kubectl ============================================
-curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetesrelease/release/stable.txt)/bin/linux/amd64/kubectl 
-chmod +x ./kubectl          #Make the kubectl binary executable 
-sudo mv ./kubectl /usr/local/bin/kubectl 
- 
-#-----EKSCTL installation---- 
-sudo curl --silent –location 
-"https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname s)_amd64.tar.gz" | tar xz -C /tmp 
- sudo mv /tmp/eksctl /usr/local/bin 
- 
-  # Create an IAM Role and attache it to EC2 instance     
-   `Note: create IAM user with programmatic access if your bootstrap system is outside of AWS`    
-   IAM user should have access to    
-   IAM    
-   EC2    
-   VPC     
-   CloudFormation 
-  # Create your cluster and nodes  
-   ```sh    eksctl create cluster --name cluster-name  \ 
-   --region region-name \ 
-   --node-type instance-type \ 
-   --nodes-min 2 \ 
-   --nodes-max 2 \  
-   --zones <AZ-1>,<AZ-2> 
-    
-   example: 
-   eksctl create cluster --name headless \ 
-      --region ap-south-1 \ 
-   --node-type t2.small \ 
- 
-# after create cluster to update it 
- aws eks update-kubeconfig --region <region> --name <cluster name> 
- ex: aws eks update-kubeconfig --region ap-south-1 --name naresh  # ------To delete the EKS clsuter    
- eksctl delete cluster naresh --region ap-south-1 
+iam role attach with admin permission
+
+========kubectl=======\
+curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+
+chmod +x ./kubectl
+
+sudo mv ./kubectl /usr/local/bin/kubectl
+
+
+
+============ekctl=======
+sudo curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+
+sudo mv /tmp/eksctl /usr/local/bin
+
+eksctl version
+
+
+
+
+
+=======cluster (eks)=====
+eksctl create cluster --name headless \
+  --region ap-south-1 \
+  --node-type t2.small
+
+
+========update=====
+aws eks update-kubeconfig --region ap-south-1 --name headless
+
+
+=========delete==========
+eksctl delete cluster headless --region ap-south-1
+
 
 
 
