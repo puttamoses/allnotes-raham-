@@ -1,13 +1,13 @@
-PROMETHEUS: this is the file
+PROMETHEUS:
 
 Prometheus is an open-source monitoring system that is especially well-suited for cloud-native environments, like Kubernetes. 
 It can monitor the performance of your applications and services.
 it will sends an alert you if there are any issues. 
 It has a powerful query language that allows you to analyze the data.
- It pulls the real-time metrics, compresses and stores  in a time-series database.
+It pulls the real-time metrics, compresses and stores  in a time-series database.
 Prometheus is a standalone system, but it can also be used in conjunction with other tools like Alertmanager to send alerts based on the data it collects.
-it can be integration with tools like PagerDuty to send alerts to the appropriate on-call personnel.
- it collects, and it also has a rich set of integrations with other tools and systems.
+it can be integration with tools like PagerDuty, Teams, Slack, Emails to send alerts to the appropriate on-call personnel.
+it collects, and it also has a rich set of integrations with other tools and systems.
 For example, you can use Prometheus to monitor the health of your Kubernetes cluster, and use its integration with Grafana to visualize the data it collects.
 
 COMPONENTS OF PROMETHEUS:
@@ -22,9 +22,9 @@ An alert manager that handles the routing and suppression of alerts
 GRAFANA:
 Grafana is an open-source data visualization and monitoring platform that allows you to create dashboards to visualize your data and metrics. 
 It is a popular choice for visualizing time series data, and it integrates with a wide range of data sources, including Prometheus, Elasticsearch, and InfluxDB.
-A user-friendly interface that allows you to create and customize dashboards with panels that display your data in a variety of formats, including graphs, gauges, and tables. You can also use Grafana to set up alerts that trigger notifications when certain conditions are met.
+A user-friendly interface that allows you to create and customize dashboards with panels that display your data in a variety of formats, including graphs, gauges, and tables. 
+You can also use Grafana to set up alerts that trigger notifications when certain conditions are met.
 Grafana has a rich ecosystem of plugins and integrations that extend its functionality. For example, you can use Grafana to integrate with other tools and services, such as Slack or PagerDuty, to receive alerts and notifications.
- Grafana is a powerful tool for visualizing and monitoring your data and metrics, and it is widely used in a variety of industries and contexts.
 
 CONNECTION:
 SETUP BOTH PROMETHEUS & GRAFAN FROM BELOW LINK
@@ -38,34 +38,255 @@ CONNECTING PROMETHEUS TO GARAFANA:
 connect to grafana dashboard -- > Data source -- > add -- > promethus -- > url of prometheus -- > save & test -- > top of page -- > explore data -- > if you want run some queries -- > top -- > import dashboard -- > 1860 -- > laod --- > prometheus -- > import 
 
 amazon-linux-extras install epel -y
-yum install strees -y
+yum install stress -y
+
+
+CONNECTING TO WORKER NODES:
+
+Craete 2 servers and install node exporter
+go to main server and 
+
+vim /etc/hosts
+public-ip node1  worker-1
+public-ip node2  worker-2
+
+
+SYNOPSIS:
+PROMETEUS:
+its a free & opensource monitoring tool
+it collects metrics of nodes
+it store metrics on time series database
+we use PromQL language 
+we can integrate promethus with tools like
+pagerduty, slack and email to send notifications
+PORT: 9090
+
+GRAFANA:
+its a visualization tool used to create dashboard.
+Datasource is main component (from where you are getting data)
+Prometheus will show data but cant create dashboards
+Dashboards: create, Import  
+we can integrate Grafana with tools like
+pagerduty, slack and email to send notifications
+PORT: 3000
+
+username & password: admin & admin
+
+NODE EXPORTER:
+collects metrics of worker nodes
+in each worker node we need to install node exporter
+Port: 9100
+
+
+10180
+14731
 
 
 
-LOKI INTEGRATION:
-Grafana with integration of Loki and Promtail:
+HELM:
 
-apt install docker.io -y
+In K8S Helm is a package manager to install packages
+in Redhat: yum & Ubuntu: apt & K8s: helm 
 
-wget https://raw.githubusercontent.com/grafana/loki/v2.8.0/cmd/loki/loki-local-config.yaml -O loki-config.yaml
-wget https://raw.githubusercontent.com/grafana/loki/v2.8.0/clients/cmd/promtail/promtail-docker-config.yaml -O promtail-config.yaml
-docker run --name loki -d -v $(pwd):/mnt/config -p 3100:3100 grafana/loki:2.8.0 -config.file=/mnt/config/loki-config.yaml
-docker run --name promtail -d -v $(pwd):/mnt/config -v /var/log:/var/log --link loki grafana/promtail:2.8.0 -config.file=/mnt/config/promtail-config.yaml
+it is used to install applications on clusters.
+we can install and deploy applications by using helm
+it manages k8s resources packages through charts 
+chart is a collection of files organized on a directory structure.
+chart is collection of manifest files.
+a running instance of a chart with a specific config is called a release.
 
-
-
-Data Source in Grafana:
-Add data source -- > loki  -- > url: http://13.233.139.224:3100 -- > save & tets
-
-Checking logs in Loki:
-Explore -- > Label filters -- > jobs=varlogs -- > run query
-
-thanks all
+INSTALLATION OF HELM:
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+helm version
 
 
+INSTALLATION OF METRIC SERVER:
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/high-availability-1.21+.yaml
+
+
+INSTALL PROMETHEUS:
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+
+UPDATE HELM CHART REPOS:
+helm repo update
+helm repo list
+
+CREATE PROMETHEUS NAMESPACE:
+kubectl create namespace prometheus
+kubectl get ns
+
+INSTALL PROMETHEUS:
+helm install prometheus prometheus-community/prometheus --namespace prometheus --set alertmanager.persistentVolume.storageClass="gp2" --set server.persistentVolume.storageClass="gp2"
+kubectl get pods -n prometheus
+kubectl get all -n prometheus
+
+CREATE GRAFANA NAMESPACE:
+kubectl create namespace grafana
+
+INSTALL GRAFANA:
+helm install grafana grafana/grafana --namespace grafana --set persistence.storageClassName="gp2" --set persistence.enabled=true --set adminPassword='RahamDevOps' --set  service.type=LoadBalancer
+kubectl get pods -n grafana
+kubectl get service -n grafana
+
+Copy the EXTERNAL-IP and paste in browser
+
+Go to Grafana Dashboard → Add the Datasource → Select the Prometheus
+add the below url in Connection and save and test
+http://prometheus-server.prometheus.svc.cluster.local/
+
+
+Import Grafana dashboard from Grafana Labs
+grafana dashboard → new → Import → 6417 → load → select prometheus → import
 
 
 
+NOW DEPLOY ANY APPLICATION AND SEE THE RESULT IN DASHBOARD.
 
-welcome
-abcd
+
+ADD 315 PORT TO MONITOR THE FOLLOWING TERMS:
+Network I/O pressure.
+Cluster CPU usage.
+Cluster Memory usage.
+Cluster filesystem usage.
+Pods CPU usage.
+
+ADD 1860 PORT TO MONITOR NODES INDIVIDUALLY 
+
+11454 -- > for pv and pvcs
+747 -- > pod metrics
+14623 -- > k8s overview db
+
+
+
+SETTING ALREATS:
+
+browser -- > my google account -- > security -- > two setp verification -- > App passwords -- > grafana -- > copy password 
+
+sttx chyr zxmu bqfr 
+
+vim /etc/grafana/grafana.ini
+line 892
+
+ 892 [smtp]
+ 893 enabled = true
+ 894 host = smtp.gmail.com:587
+ 895 user = devopsbyraham@gmail.com
+ 896 # If the password contains # or ; you have to wrap it with triple quotes. Ex """#pa     ssword;"""
+ 897 password = xhfa drlb zgwm ogey
+ 898 ;cert_file =
+ 899 ;key_file =
+ 900 skip_verify = true
+ 901 from_address = devopsbyraham@gmail.com
+ 902 from_name = grafana
+
+systemctl restart grafana-server.service
+systemctl status grafana-server.service
+
+Grafana -- > Aleart rules -- contact point -- > name -- > email -- > test -- > check gmail
+
+aleating rules -- > new -- > set -- > name: Grafana -- > Metric: node_cpu_seconds_total -- > instace -- > localhost:9100 -- > 
+
+Input: A & Function: Last & Mode: Strict 
+Input: B & isabove: 0.7 (70%)
+
+Folder: cpu
+Evaluation group: cpu
+Pending period: 30s 
+
+
+
+ENV VARIABLES:
+
+It is a way to pass configuration information to containers running within pods. 
+To set Env   vars it include the env or envFrom field in the configuration file.
+
+ENV: DIRECTLY PASSING
+ENVFROM: PASSING FROM FILE
+
+ENV:
+allows you to set environment variables for a container, specifying a value directly for each variable that you name.
+
+ENVFROM:
+allows you to set environment variables for a container by referencing either a ConfigMap or a Secret. 
+When you use envFrom, all the key-value pairs in the referenced ConfigMap or Secret are set as environment variables for the container. 
+You can also specify a common prefix string
+
+CONFIGMAPS:
+
+It is used to store the data in key-value pair, files, or command-line arguments that can be used by pods, containers and other resources in cluster
+But the data should be non confidential data ()
+But it does not provider security and encryption.
+If we want to provide encryption use secrets in kubernetes.
+Limit of config map data in only 1 MB (we cannot store more than that)
+But if we want to store a large amount of data in config maps we have to mount a volume or use a seperate database or file service.
+
+
+USE CASES:
+Configure application setting
+Configuring a pod or container
+Sharing configuration data across multiple resources
+We can store the data: By using this config maps, we can store the data like IP address, URL's and DNS etc...
+
+kubectl create deploy swiggydb --image=mariadb
+kubectl get pods
+kubectl logs swiggydb-5d49dc56-cbbqk
+
+It is crashed why because we havent specified the password for it
+
+
+kubectl set env deploy swiggydb MYSQL_ROOT_PASSWORD=Raham123 
+kubectl get pods
+now it will be on running state
+kubectl delete deploy swiggydb
+
+PASSING FROM VAR FILE:
+kubectl create deploy swiggydb --image=mariadb
+kubectl get pods
+kubectl logs swiggydb-5d49dc56-cbbqk
+
+vim vars
+
+MYSQL_ROOT_PASSWORD=Raham123
+MYSQL_USER=admin
+
+kubectl create cm dbvars --from-env-file=varsfile
+kubectl describe cm dbvars
+
+kubectl get cm
+kubectl set env deploy swiggydb --from=configmap/dbvars
+kubectl get pods
+
+SECRETS: To store sensitive data in an unencrypted format like passwords, ssh-keys etc ---
+it uses base64 encoded format
+password=raham (now we can encode and ecode the value)
+
+WHY: if i dont want to expose the sensitive info so we use SECRETS
+By default k8s will create some Secrets these are useful from me to create communicate inside the cluster
+used to communicate with one resoure to another in cluster
+These are system created secrets, we need not to delete
+
+TYPES:
+Generic: creates secrets from files, dir, literal (direct values)
+TLS: Keys and certs
+Docker Registry: used to get private images by using the password
+
+kubectl create deploy swiggydb --image=mariadb
+kubectl get po 
+kubectl create secret generic password --from-literal=ROOT_PASSWORD=raham123 (from cli)
+kubectl create secret generic my-secret --from-env-file=vars (from file)
+
+kubectl get secrets
+kubectl describe secret password
+kubectl set env deploy swiggydb --from=secrets/password
+kubectl get po 
+kubectl set env deploy newdb --from=secret/password --prefix=MYSQL_
+
+without passing prefix we cant make the pod running status
+
+TO SEE SECRETS:
+kubectl get secrets password -o yaml
+echo -n "cmFoYW0xMjM" | base64 -d
+echo -n "cmFoYW0xMjM" | base64 --decode
