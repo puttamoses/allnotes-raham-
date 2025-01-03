@@ -174,12 +174,20 @@ K8's cannot communicate with containers, they can communicate with only pods.
 IMPERATIVE:
 
 kubectl run pod1 --image vinodvanama/paytmmovies:latest
-kubectl get pod
+kubectl get pods/pod/po
 kubectl get pod -o wide
 kubectl describe pod pod1
-kubectl delete pod pod2
+kubectl delete pod pod1
 
-DECRALATIVE:
+DECRALATIVE: by using file called manifest file
+
+MANDATORY FEILDS: without these feilds we cant create manifest
+
+apiVersion:
+kind:
+metadata:
+spec:
+
 
 vim pod.yml
 
@@ -192,215 +200,153 @@ spec:
     - image: vinodvanama/paytmtrain:latest
       name: cont1
 
-kubectl apply -f pod.yml
+execution: 
+kubectl create -f pod.yml
+kubectl get pods/pod/po
+kubectl get pod -o wide
+kubectl describe pod pod1
+kubectl delete -f raham.yml
+
+DRAWBACK: once pod is deleted we can't retrieve the pod.
 
 
-HISTORY:
- 1  vim minikube.sh
-    2  sh minikube.sh
-    3  minikube status
-    4  kubectl run pod1 --image vinodvanama/paytmmovies:latest
-    5  kubectl get pod
-    6  kubectl run pod2 --image vinodvanama/paytmtrain:latest
-    7  kubectl get pod
-    8  kubectl grt pod -o wide
-    9  kubectl get pod -o wide
-   10  kubectl describe pod pod1
-   11  kubectl delete pod pod2
-   12  kubectl get pod
-   13  kubectl delete pod pod1
-   14  vim pod.yml
-   15  kubectl create -f pod.yml
-   16  kubectl get pod
-   17  kubectl describe pod pod1
-   18  cat pod.yml
-   19  history
-===============================================
-REPLICASET:
+=================================================================================REPLICASET:
+rs -- > pods
 it will create multiple copies of same pod.
 if we delete one pod automatically it will create new pod.
+All the pods will have same config. (from Template)
+only pod names will be differnet.
 
 
-LABELS: is used to craete the particular pods as a single unit.
+LABLES: individual pods are difficult to manage because they have different names.
+so we give a common label to group them and work with them together
 SELECTOR: Used to select pods with same labels.
 
+
+use kubectl api-resources for checking the objects info
 
 vim replicaset.yml
 
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
+  name: movies
   labels:
-    app: swiggy
-  name: swiggy-rs
+    app: paytm
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: swiggy
+      app: paytm
   template:
     metadata:
       labels:
-        app: swiggy
+        app: paytm
     spec:
       containers:
-      - name: cont1
-        image: nginx
+        - name: cont1
+          image: yashuyadav6339/movies:latest
+
+
 
 
 To list rs		:kubectl get rs/replicaset
 To show addtional info	:kubectl get rs -o wide
 To show complete info	:kubectl describe rs name-of-rs
 To delete the rs	:kubectl delete rs name-of-rs
-to get lables of pods 	: kubectl get pods -l app=swiggy
-TO scale rs		: kubectl scale rs/swiggy-rs --replicas=10 (LIFO)
+to get lables of pods 	: kubectl get pods -l app=Paytm
+to delete pods		: kubectl delete po -l app=paytm
+TO scale rs		: kubectl scale rs/movies --replicas=10 (LIFO)
+
+
+LIFO: LAST IN FIRST OUT.
+IF A POD IS CREATED LASTLY IT WILL DELETE FIRST WHEN SCALE OUT.
+
+ADV:
+Self healing
+scaling
 
 DRAWBACKS:
-1. we cant rollin and rollout, we cant update the application in rs.
+1. we cant Rollin and rollout, we cant update the application in rs.
 
 DEPLOYMENT:
 deploy -- > rs -- > pods
-we can update the application.
 its high level k8s objects.
+we can update the application.
 
 vim deploy.yml
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: movies
   labels:
-    app: swiggy
-  name: swiggy-rs
+    app: paytm
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: swiggy
+      app: paytm
   template:
     metadata:
       labels:
-        app: swiggy
+        app: paytm
     spec:
       containers:
-      - name: cont1
-        image: nginx
+        - name: cont1
+          image: yashuyadav6339/movies:latest
+
 
 
 To list deployment	:kubectl get deploy
 To show addtional info	:kubectl get deploy -o wide
 To show complete info	:kubectl describe deploy name-of-deployment
 To delete the deploy	:kubectl delete deploy name-of-deploy
-to get lables of pods 	:kubectl get pods -l app=swiggy
+to get lables of pods 	:kubectl get pods -l app=paytm
 TO scale deploy		:kubectl scale deploy/name-of-deploy --replicas=10 (LIFO)
 To edit deploy		:kubectl edit deploy/name-of-deploy
 to show all pod labels	:kubectl get pods --show-labels
 To delete all pods	:kubectl delete pod --all
 
 
+BY DEFUALT K8S WILL FOLLOW ROLLING-UPDATE STRATEGY.
 
-HISTORY:
- 1  vim minikube.sh
-    2  sh minikube.sh
-    3  vim rs.yml
-    4  kubectl get pods
-    5  kubectl create -f rs.yml
-    6  kubectl get pods
-    7  kubectl get pods --show labels
-    8  kubectl get pods -l swiggy
-    9  kubectl get pods -l=swiggy
-   10  kubectl get pods
-   11  kubectl describe pod swiggy-rs-h4f6x
-   12  kubectl get pods -l app=swiggy
-   13  kubectl delete pod swiggy-rs-h4f6x
-   14  kubectl get pods
-   15  kubectl delete pod swiggy-rs-9ks7n
-   16  kubectl get pods
-   17  kubectl get replicaset
-   18  kubectl get rs
-   19  kubectl get rs -o wide
-   20  kubectl describe rs swiggy-rs
-   21  kubectl delete rs swiggy-rs
-   22  kubectl get po
-   23  cat rs.yml
-   24  kubectl api-resource
-   25  kubectl api-resources
-   26  cat rs.yml
-   27  kubectl create -f rs.yml
-   28  kubectl get rs
-   29  kubectl get rs -o wide
-   30  kubectl describe rs swiggy-rs
-   31  kubectl delete rs swiggy-rs
-   32  kubectl get rs
-   33  kubectl get po
-   34  kubectl create -f rs.yml
-   35  kubectl get rs
-   36  kubectl get po
-   37  kubectl scale rs/swiggy-rs --scale=10
-   38  kubectl scale rs/swiggy-rs --replicas=10
-   39  kubectl get po
-   40  kubectl scale rs/swiggy-rs --replicas=5
-   41  kubectl get po
-   42  kubectl delete rs swiggy-rs
-   43  vim rs.yml
-   44  kubectl apply -f rs.yml
-   45  kubectl get deploy
-   46  kubectl get rs
-   47  kubectl get pods
-   48  kubectl describe deploy swiggy-rs
-   49  kubectl get pods
-   50  kubectl describe pod swiggy-rs-6d6f49d7cd-rqf84
-   51  kubectl describe pod swiggy-rs-6d6f49d7cd-ts6jq
-   52  kubectl edit deploy/swiggy-rs
-   53  kubectl describe deploy swiggy-rs
-   54  kubectl get po
-   55  kubectl delete pod swiggy-rs-64956f47f-9q6mn
-   56  kubectl describe pod swiggy-rs-64956f47f-c46ss
-   57  kubectl describe pod swiggy-rs-64956f47f-g9cf8
-   58  kubectl edit deploy/swiggy-rs
-   59  kubectl get rs
-   60  kubectl describe deploy
-   61  kubectl get po
-   62  kubectl scale deploy/swiggy-rs --replicas=20
-   63  kubectl get po
-   64  kubectl scale deploy/swiggy-rs --replicas=3
-   65  kubectl get po
-   66  kubectl run pod1 --image vinodvanama/paytmmovies:latest
-   67  kubectl run pod2 --image vinodvanama/paytmmovies:latest
-   68  kubectl run pod3 --image vinodvanama/paytmmovies:latest
-   69  kubectl get po
-   70  kubectl get po -l app=swiggy
-   71  kubectl get po --help
-   72  kubectl get po
-   73  kubectl get po -o wide
-   74  kubectl get po -o wide --show --help
-   75  kubectl get po --show --help
-   76  kubectl get po --show -h
-   77  kubectl get po --labels
-   78  kubectl get po -l --help
-   79  kubectl get rs -o wide
-   80  kubectl get pods --show-labels
-   81  kubectl delete pod -A
-   82  kubectl delete pod -A default
+kubectl rollout history deploy/movies
+kubectl rollout undo deploy/movies
+kubectl rollout status deploy/movies
+kubectl rollout pause deploy/movies
+kubectl rollout resume deploy/movies
 
-   83  kubectl delete pod --all default
-   84  kubectl delete pod --all
-   85  history
-root@ip-172-31-17-73:~#
+COMMANDS FOR SHORTCUTS:
 
-=======================================================
-INFRASTRUCUTRE: Resource used to run our application on cloud.
-EX: servers, Vpc, LB, Asg
-Highly availablility : More than one server
+vim .bashrc
+
+alias kgp="kubectl get pods"
+alias kgr="kubectl get rs"
+alias kgd="kubectl get deploy"
+
+source .bashrc
+
+kgr
+kgp
+
+================================================================================
 
 KOPS:
+INFRASTRUCTURE: Resources used to run our application on cloud.
+EX: Ec2, VPC, ALB, ASG-------------
+
 
 Minikube -- > single node cluster
 All the pods on single node 
-kOps, also known as Kubernetes operations, is an open-source tool that helps you create, destroy, upgrade, and maintain a highly available, production-grade Kubernetes cluster. 
+if that node got deleted then all pods will be gone.
+
+KOPS:
+kOps, also known as Kubernetes operations.
+it is an free and  open-source tool.
+used to create, destroy, upgrade, and maintain a highly available, production-grade Kubernetes cluster. 
 Depending on the requirement, kOps can also provide cloud infrastructure.
-kOps is mostly used in deploying AWS and GCE Kubernetes clusters. 
-But officially, the tool only supports AWS. 
-Support for other cloud providers (such as DigitalOcean, GCP, and OpenStack) are in the beta stage.
+AWS (Amazon Web Services) and GCE (Google Cloud Platform) are currently officially supported, with DigitalOcean, Hetzner and OpenStack in beta support, and Azure in alpha.
 
 ADVANTAGES:
 •	Automates the provisioning of AWS and GCE Kubernetes clusters
@@ -411,95 +357,72 @@ ADVANTAGES:
 •	Manages cluster add-ons.
 •	Supports state-sync model for dry-runs and automatic idempotency
 •	Creates instance groups to support heterogeneous clusters
+
 ALTERNATIVES:
-Amazon EKS , MINIKUBE, KUBEADM, RANCHER, TERRAFORM, HELM.
+Amazon EKS , MINIKUBE, KUBEADM, RANCHER, TERRAFORM.
 
 
-keys -- > iam -- > user -- > craete users -- > name: kops -- > attach polocies directly -- > AdministratorAccess -- > next -- > create 
-select user -- > security credentials -- > Access keys -- > create Access keys 
--- > cli -- > confirm -- > crearte Access keys -- > download file
 
+STEP-1: GIVING PERMISSIONS 
 
-PREREQUSITES:
-iam: to give permission to create infra
-bucket: used to store cluster info
-versioning: to retrive the deleted objects on bucket
+KOps Is a third party tool if it want to create infrastructure on aws 
+aws need to give permission for it so we can use IAM user to allocate permission for the kops tool
 
-SETUP:
+IAM -- > USER -- > CREATE USER -- > NAME: KOPS -- > Attach Polocies Directly -- > AdministratorAccess -- > NEXT -- > CREATE USER
+USER -- > SECURTITY CREDENTIALS -- > CREATE ACCESS KEYS -- > CLI -- > CHECKBOX -- >  CREATE ACCESS KEYS -- > DOWNLOAD 
 
-#vim .bashrc
-#export PATH=$PATH:/usr/local/bin/
-#source .bashrc
+aws configure (run this command on server)
 
+SETP-2: INSTALL KUBECTL AND KOPS
 
-#! /bin/bash
-aws configure
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 wget https://github.com/kubernetes/kops/releases/download/v1.25.0/kops-linux-amd64
 chmod +x kops-linux-amd64 kubectl
 mv kubectl /usr/local/bin/kubectl
 mv kops-linux-amd64 /usr/local/bin/kops
 
-aws s3api create-bucket --bucket rahamssshaik09.k8s.local --region us-east-1
-aws s3api put-bucket-versioning --bucket rahamssshaik09.k8s.local --region us-east-1 --versioning-configuration Status=Enabled
-export KOPS_STATE_STORE=s3://rahamssshaik09.k8s.local
+vim .bashrc
+export PATH=$PATH:/usr/local/bin/  -- > save and exit
+source .bashrc
 
+SETP-3: CREATING BUCKET 
+aws s3api create-bucket --bucket rahamsdevopsbatchmay29202479am.k8s.local --region us-east-1
+aws s3api put-bucket-versioning --bucket rahamsdevopsbatchmay29202479am.k8s.local --region us-east-1 --versioning-configuration Status=Enabled
+export KOPS_STATE_STORE=s3://rahamsdevopsbatchmay29202479am.k8s.local
+
+SETP-4: CREATING THE CLUSTER
 kops create cluster --name rahams.k8s.local --zones us-east-1a --master-count=1 --master-size t2.medium --node-count=2 --node-size t2.micro
 kops update cluster --name rahams.k8s.local --yes --admin
-
-kubectl get no
-kops get cluster
 
 
 Suggestions:
  * list clusters with: kops get cluster
- * edit this cluster with: kops edit cluster rahams.k8s.local
- * edit your node instance group: kops edit ig --name=rahams.k8s.local nodes-us-east-1a
- * edit your master instance group: kops edit ig --name=rahams.k8s.local master-us-east-1a
-
-Finally configure your cluster with: kops update cluster --name rahams.k8s.local --yes --admin
+ * edit this cluster with: kops edit cluster rahamdevops.k8s.local
+ * edit your node instance group: kops edit ig --name=rahamdevops.k8s.local nodes-ap-south-1a
+ * edit your master instance group: kops edit ig --name=rahamdevops.k8s.local master-ap-south-1a
 
 
-CLUSTER ADMIN ACTIVITIES:
-
-SCALING THE NODES:
+ADMIN ACTIVITIES:
+To scale the worker nodes:
 kops edit ig --name=rahams.k8s.local nodes-us-east-1a
-kops edit ig --name=rahams.k8s.local nodes-us-east-1a (MIN AND MX REPLACE WITH 4)
-kops update cluster --name rahams.k8s.local --yes --admin
+kops update cluster --name rahams.k8s.local --yes --admin 
+kops rolling-update cluster --yes
+
+ADMIN ACTIVITIES:
+kops edit ig --name=rahams.k8s.local master-us-east-1a
+kops update cluster --name rahamdevops.k8s.local --yes
 kops rolling-update cluster
 
-To delete cluster: kops delete cluster --name rahams.k8s.local --yes
-Note: bucket will not delete 
+NOTE: In real time we use five node cluster two master nodes and three worker nodes.
 
-===============================================
+NOTE: its My humble request for all of you not to delete the cluster manually and do not delete any server use the below command to delete the cluster.
 
-CRIPT:
-RUN BELOW COMMANDS MANUALLY
-#vim .bashrc
-#export PATH=$PATH:/usr/local/bin/
-#source .bashrc
+TO DELETE: kops delete cluster --name rahamdevops.k8s.local --yes
 
-
-#! /bin/bash
-aws configure
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-wget https://github.com/kubernetes/kops/releases/download/v1.25.0/kops-linux-amd64
-chmod +x kops-linux-amd64 kubectl
-mv kubectl /usr/local/bin/kubectl
-mv kops-linux-amd64 /usr/local/bin/kops
-
-aws s3api create-bucket --bucket rahamssshaik09.k8s.local --region us-east-1
-aws s3api put-bucket-versioning --bucket rahamssshaik09.k8s.local --region us-east-1 --versioning-configuration Status=Enabled
-export KOPS_STATE_STORE=s3://rahamssshaik09.k8s.local
-kops create cluster --name rahams.k8s.local --zones us-east-1a --master-count=1 --master-size t2.medium --node-count=2 --node-size t2.micro
-kops update cluster --name rahams.k8s.local --yes --admin
-
-
-RUN COMMAND AFTER SCRIPT
-export KOPS_STATE_STORE=s3://rahamssshaik09.k8s.local
-kops validate cluster --wait 10m
 
 ==================================================================
+
+
 NAMESPACES:
 
 NAMESPACE: It is used to divide the cluster to multiple teams on real time.
@@ -507,48 +430,49 @@ it is used to isolate the env.
 
 CLUSTER: HOUSE
 NAMESPACES: ROOM
+TEAM MATES: FAMILY MEM
 
 Each namespace is isolated.
 if your are room-1 are you able to see room-2.
+If dev team create a pod on dev ns testing team cant able to access it.
 we cant access the objects from one namespace to another namespace.
 
 
 TYPES:
 
 default           : Is the default namespace, all objects will create here only
-kube-node-lease   : it will store object which is taken from one namespace to another.
+kube-node-lease   : it will store object which is taken from one node to another.
 kube-public	  : all the public objects will store here.      
 kube-system 	  : default k8s will create some objects, those are storing on this ns.
+
+NOTE: Every component of Kubernetes cluster is going to create in the form of pod
+And all these pods are going to store on kUBE-SYSTEM ns.
 
 kubectl get pod -n kube-system	: to list all pods in kube-system namespace
 kubectl get pod -n default	: to list all pods in default namespace
 kubectl get pod -n kube-public	: to list all pods in kube-public namespace
 kubectl get po -A		: to list all pods in all namespaces
+kubectl get po --all-namespaces
 
 kubectl create ns dev	: to create namespace
 kubectl config set-context --current --namespace=dev : to switch to the namespace
+kubectl config view : to see current namespace
+kubectl run dev1 --image nginx
+kubectl run dev2 --image nginx
+kubectl run dev3 --image nginx
+kubectl create ns test	: to create namespace
+kubectl config set-context --current --namespace=test : to switch to the namespace
 kubectl config view --minify | grep namespace : to see current namespace
+kubectl get po -n dev
+kubectl delete pod dev1 -n dev
 kubectl delete ns dev	: to delete namespace
 kubectl delete pod --all: to delete all pods
 
+NOTE: BY DEFAULT K8S NAMESPACE WILL PROVIDE ISOLATION BUT NOT RESTRICTION.
+TO RESTRICT THE USER TO ACCESS A NAMESPACE IN REAL TIME WE USE RBAC.
+WE CREATE USER, WE GIVE ROLES AND ATTACH ROLE.
 
-NOTE: By deleting  the ns all objects also gets deleted.
-in real time we use rbac concept to restrict the access from one namespace to another.
-so users cant access/delete ns, because of the restriction we provide.
-we create roles and rolebind for the users.
-
-
-KUBECOLOR:
-
-wget https://github.com/hidetatz/kubecolor/releases/download/v0.0.25/kubecolor_0.0.25_Linux_x86_64.tar.gz
-tar -zxvf kubecolor_0.0.25_Linux_x86_64.tar.gz
-./kubecolor
-chmod +x kubecolor
-mv kubecolor /usr/local/bin/
-kubecolor get po
-
-==============================================================================
-
+alias switch="kubectl config set-context --current"
 
 SERVICE: It is used to expose the application in k8s.
 
@@ -560,17 +484,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: swiggy
-  name: swiggy-deploy
+    app: movies
+  name: movies-deploy
 spec:
-  replicas: 3
+  replicas: 10
   selector:
     matchLabels:
-      app: swiggy
+      app: movies
   template:
     metadata:
       labels:
-        app: swiggy
+        app: movies
     spec:
       containers:
       - name: cont1
@@ -581,11 +505,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: sv1
+  name: service1
 spec:
   type: ClusterIP
   selector:
-    app: swiggy
+    app: movies
   ports:
     - port: 80
 
@@ -594,48 +518,50 @@ We cannot use app outside.
 
 2. NODEPORT: It will expose our application in a particular port.
 Range: 30000 - 32767 (in sg we need to give all traffic)
+if we dont sepcify k8s service will take random port number.
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: swiggy
-  name: swiggy-deploy
+    app: movies
+  name: movies-deploy
 spec:
-  replicas: 3
+  replicas: 10
   selector:
     matchLabels:
-      app: swiggy
+      app: movies
   template:
     metadata:
       labels:
-        app: swiggy
+        app: movies
     spec:
       containers:
       - name: cont1
-        image: rahamshaik/trainservice:latest
+        image: rahamshaik/moviespaytm:latest
         ports:
           - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: abc
+  name: service1
 spec:
   type: NodePort
   selector:
-    app: swiggy
+    app: movies
   ports:
     - port: 80
-      targetPort: 80
       nodePort: 31111
 
-
-NOTE: UPDATE THE SG (REMOVE OLD TRAFFIC AND GIVE ALL TRAFFIC & SSH)
+NOTE: UPDATE THE SG (REMOVE OLD TRAFFIC AND GIVE ALL TRAFFIC)
 DRAWBACK:
+EXPOSING PUBLIC-IP & PORT 
 PORT RESTRICTION.
 
 3. LOADBALACER: It will expose our app and distribute load blw pods.
+it will expose the application with dns [Domain Name System] -- > 53
+to crete dns we use Route53 
 
 apiVersion: apps/v1
 kind: Deployment
@@ -669,221 +595,419 @@ spec:
     app: swiggy
   ports:
     - port: 80
-      targetPort: 80
+=====================================================================
+
+DAEMONSET: used to create one pod on each workernode.
+Its the old version of Deployment.
+if we create a new node a pod will be automatically created.
+if we delete a old node a pod will be automatically removed.
+daemonsets will not be removed at any case in real time.
+Usecases: we can create pods for Logging, Monitoring of nodes 
+
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: swiggy
+  name: swiggy-deploy
+spec:
+  selector:
+    matchLabels:
+      app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+    spec:
+      containers:
+      - name: cont1
+        image: rahamshaik/moviespaytm:latest
+        ports:
+          - containerPort: 80
+
+
+Replication controller is the previous version of replica set.
+
+RC : uses equity based selector (=, =!)
+RS: used set based selector ( env in (dev, test)
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+  selector:
+    app: nginx
+  template:
+    metadata:
+      name: nginx
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: rahamshaik/moviespaytm:latest
+        ports:
+        - containerPort: 80
+
+
+
+
+
+
+METRIC SERVER:
+if we install metric server in k8s cluster it can collects metrics like cpu, ram -- from all the pods and nodes in cluster.
+we can use kubectl top po/no to see metrics
+previously we can called it as heapster.
+
+Metrics Server offers:
+
+    A single deployment that works on most clusters (see Requirements)
+    Fast autoscaling, collecting metrics every 15 seconds.
+    Resource efficiency, using 1 milli core of CPU and 2 MB of memory for each node in a cluster.
+    Scalable support up to 5,000 node clusters.
+
+
+You can use Metrics Server for:
+CPU/Memory based horizontal autoscaling (Horizontal Autoscaling)
+Automatically adjusting/suggesting resources needed by containers (Vertical Autoscaling)
+
+
+Horizontal: New 
+Vertical: Existing
+
+
+
+In Kubernetes, a HorizontalPodAutoscaler automatically updates a workload resource (such as a Deployment or ReplicaSet), with the aim of automatically scaling the workload to match demand.
+
+Example : if you have pod-1 with 50% load and pod2 with 50% load then average will be (50+50/2=50) average value is 50
+but if pod-1 is exceeding 60% and pod-2 50% then average will be 55% (then here we need to create a pod-3 becaue its exceeding the average)
+
+Here we need to use metric server whose work is to collect the metrics (cpu & mem info)
+metrics server is connected to the HPA and give information to HPA 
+Now HPA will analysis metrics for every 30 sec and create a new pod if needed.
+
+
+COOLING PERIOD:
+
+
+scaling can be done only for scalable objects (ex: RS, Deployment, RC )
+HPA is implemented as a K8S API Resources and a controller.
+Controller Periodically adjust the number of replicas in RS, RC and Deployment depends on average.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movies
+  labels:
+    app: movies
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: movies
+  template:
+    metadata:
+      labels:
+        app: movies
+    spec:
+      containers:
+        - name: cont1
+          image: yashuyadav6339/movies:latest
+
+
+kubectl apply -f hpa.yml
+kubectl get all
+kubectl get deploy 
+kubectl autoscale deployment movies --cpu-percent=20 --min=1 --max=10
+kubectl get hpa
+kubectl desribe hpa movies
+kubectl get al1
+
+open second termina and give
+kubectl get po --watch
+
+come to first terminal and go inside pod
+kubectl exec mydeploy-6bd88977d5-7s6t8 -it -- /bin/bash
+
+apt update -y
+apt install stress -y
+stress 
+
+check terminal two to see live pods
 
 ======================================================================
 
-DAY-06:
-  
-CONFIGMAPS & SECRETS
-  
-ENV VARS: used to define a vlaue.
-LEVEL:
-CONTAINER LEVEL
-POD LEVEL
-DEPLOYMENT LEVEL
+
+QUOTAS:
+k8s cluster can be divied into namespaces
+By default the pod in K8s will run with no limitations of Memory and CPU
+But we need to give the limit for the Pod 
+It can limit the objects that can be created in a namespace and total amount of resources.
+when we create a pod scheduler will the limits of node to deploy pod on it.
+here we can set limits to CPU, Memory and Storage
+here CPU is measured on cores and memory in bytes.
+1 cpu = 1000 millicpus  ( half cpu = 500 millicpus (or) 0.5 cpu)
+
+Here Request means how many we want
+Limit means how many we can create maximum
+
+limit can be given to pods as well as nodes
+the default limit is 0
+
+if you mention request and  limit then everything is fine
+if you dont mention request and mention limit then Request=Limit
+if you mention request and not mention limit then Request=!Limit
+
+IMPORTANT:
+Ever Pod in namespace must have CPU limts.
+The amount of CPU used by all pods inside namespace must not exceed specified limit.
+
+DEFAULT RANGE:
+CPU : 
+MIN		= REQUEST = 0.5
+MAX		= LIMIT = 1
+
+MEMORY :
+MIN	= REQUEST = 500M
+MAX	= LIMIT = 1G
 
 
-METHODS TO DEFINE:
-1. MANIFEST FILE
-2. CONFIGMAPS
-3. SECRETS
+kubectl create ns dev
+kubectl config set-context $(kubectl config current-context) --namespace=dev
 
-CONFIGMAP:
+vim dev-quota.yml
 
-Used to store data in key-value, files or CLI used by pods, container etc---
-data is not encrypted, if we want encrypt we need to use secrets.
-limit is 1 MB, to store more than 1 MB mount the volume seperately.
-
-
-1. key-value:
-
-cat configmap.yml
 apiVersion: v1
-kind: ConfigMap
+kind: ResourceQuota
 metadata:
-  name: swiggycm
-data:
-  tomcat_url: "https://192.16.100.10:8080"
-  db_url: "https://192.16.100.10:5432"
-
-cat pod.yml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: swiggy
+  name: dev-quota
+  namespace: dev
 spec:
-  containers:
-    - name: swiggy-cont1
-      image: nginx
-      envFrom:
-        - configMapRef:
-            name: swiggycm
+  hard:
+    pods: "5"
+    limits.cpu: "1"
+    limits.memory: 1Gi
 
-kubectl apply -f configmap.yml
-kubectl apply -f pod.yml
-kubectl describe cm swiggycm
-kubectl describe pod swiggy
+kubectl create -f dev-quota.yml
+kubectl get quota
 
 
-2. CLI:
+EX-1: Mentioning Limits  = SAFE WAY
 
-kubectl create deploy swiggydb --image=mariadb
-kubectl get pods
-kubectl create deploy swiggydb --image=mariadb
-kubectl logs swiggydb-5d49dc56-cbbqk
-kubectl set env deploy swiggydb MYSQL_ROOT_PASSWORD=Raham123 
-kubectl get pods
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movies
+  labels:
+    app: movies
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: movies
+  template:
+    metadata:
+      labels:
+        app: movies
+    spec:
+      containers:
+        - name: cont1
+          image: yashuyadav6339/movies:latest
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
 
-3. FILE
+kubectl create -f dep.yml
 
-vim varsfile
-MYSQL_ROOT_PASSWORD=Raham123
-MYSQL_USER=admin
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movies
+  labels:
+    app: movies
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: movies
+  template:
+    metadata:
+      labels:
+        app: movies
+    spec:
+      containers:
+        - name: cont1
+          image: yashuyadav6339/movies:latest
+          resources:
+            limits:
+              cpu: "0.2"
+              memory: 100Mi
 
-kubectl create cm dbvars --from-env-file=varsfile
-kubectl describe cm dbvars
-kubectl get deploy 
-kubectl delete deploy swiggydb
-kubectl create deploy swiggydb --image=mariadb 
-kubectl get pods
-kubectl get cm
-kubectl set env deploy swiggydb --from=configmap/dbvars
-kubectl get pods
-kubectl edit deploy swiggydb
-
-SECRETS:
-
-To store sensitive data in an unencrypted format like passwords, ssh-keys etc ---
-it uses base64 encoded format
-Designed to prevent  exposure or unauthorized access to sensitive information within the cluster.
-Both secrets and Config maps are used outside of deployment
-config maps cannot encode but secrets will encode the data
-password=raham (now we can encode and ecode the value)
-
-
-K8s supports different types of secrets:
-Generic: Generic secrets allow you to store arbitrary key-value pairs.
-TLS: To store TLS certificates for securing communication between services.
-Docker-registry: Docker-registry secrets are used for storing credentials required to authenticate with private Docker registries.
-SSH: To store SSH private keys, used for secure access to external resources.
-
-
-kubectl get secret
-kubectl create secret generic password --from-literal=ROOT_PASSWORD=raham123
-kubectl get secrets
-kubectl get secrets password -o yaml
-echo "cmFoYW0xMjM=" | base64 --decode
-echo "cmFoYW0xMjM=" | base64 -d
-
-HISTORY:
-1  vim .bashrc
-    2  source .bashrc
-    3  aws configure
-    4  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubec                                                                                                                   tl"
-    5  wget https://github.com/kubernetes/kops/releases/download/v1.25.0/kops-linux-amd64
-    6  ll
-    7  chmod +x kops-linux-amd64 kubectl
-    8  ll
-    9  mv kubectl /usr/local/bin/kubectl
-   10  mv kops-linux-amd64 /usr/local/bin/kops
-   11  kops --version
-   12  kubectl --version
-   13  kubectl version
-   14  kops version
-   15  wget https://github.com/kubernetes/kops/releases/download/v1.25.0/kops-linux-amd64
-   16  aws s3api create-bucket --bucket rahamssshaik09.k8s.local --region us-east-1
-   17  aws s3api create-bucket --bucket vinodvanamaa007.k8s.local --region us-east-1
-   18  aws s3api put-bucket-versioning --bucket vinodvanamaa007.k8s.local --region us-east-1 --versioning-configura                                                                                                                   tion Status=Enabled
-   19  export KOPS_STATE_STORE=s3://vinodvanamaa007.k8s.local
-   20  kops create cluster --name rahams.k8s.local --zones us-east-1a --master-count=1 --master-size t2.medium --no                                                                                                                   de-count=2 --node-size t2.micro
-   21   kops update cluster --name rahams.k8s.local --yes --admin
-   22   kops validate cluster --wait 10m
-   23  kops get cluster
-   24  kubectl get no
-   25  kops edit ig --name=rahams.k8s.local nodes-us-east-1a
-   26  kops update cluster --name rahams.k8s.local --yes
-   27   kops rolling-update cluster
-   28  kubectl get no
-   29  kops edit ig --name=rahams.k8s.local nodes-us-east-1a
-   30  kops rolling-update cluster
-   31  kops update cluster --name rahams.k8s.local --yes
-   32  kops rolling-update cluster
-   33  kops edit ig --name=rahams.k8s.local master-us-east-1a
-   34  kops update cluster --name rahams.k8s.local --yes
-   35  kops edit ig --name=rahams.k8s.local master-us-east-1a
-   36  kops update cluster --name rahams.k8s.local --yes
-   37  kops rolling-update cluster
-   38  kubectl get no
-   39  kops get cluster
-   40  kops delete cluster --name rahams.k8s.local --yes
-   41  kops get cluster
-   42  history
-============================================================
+kubectl create -f dep.yml
 
 
-HISTORY:
 
- 1  vim kops.sh
-    2  vim .bashrc
-    3  source .bashrc
-    4  sh kops.sh
-    5  vim .aws/credentials
-    6  sh kops.sh
-    7  kubectl get no
-    8  kops get cluster
-    9  cat kops.sh
-   10  export KOPS_STATE_STORE=s3://viratkohli77.k8s.local
-   11  cat kops.sh
-   12  kops get cluster
-   13  kubectl get no
-   14  vim abc.yml
-   15  kubectl apply -f abc.yml
-   16  kubectl get deploy
-   17  kubectl get svc
-   18  kubectl delete -f abc.yml
-   19  vim abc.yml
-   20  kubectl apply -f abc.yml
-   21  kubectl get svc,deploy
-   22  kubectl get po -o wide
-   23  vim abc.yml
-   24  kubectl apply -f abc.yml
-   25  kubectl get svc,deploy
-   26  kubectl delete -f abc.yml
-   27  vim abc.yml
-   28  kubectl apply -f abc.yml
-   29  kubectl get svc,deploy
-   30  kubectl delete -f abc.yml
-   31  rm -rf *
-   32  vim configmap.yml
-   33  vim pod.yml
-   34  kubectl apply -f configmap.yml
-   35  kubectl apply -f pod.yml
-   36  kubectl get po
-   37  kubectl describe pod swiggy
-   38  kubectl api-resources
-   39  kubectl api-resources | grep -i cm
-   40  kubectl get cm
-   41  kubectl describe cm swiggycm
-   42  kubectl create deploy swiggydb --image=mariadb
-   43  kubectl get deploy
-   44  kubectl get po
-   45  kubectl logs swiggydb-6b66f8997f-vbhmg
-   46  kubectl set env deploy swiggydb MYSQL_ROOT_PASSWORD=Raham123
-   47  kubectl get po
-   48  vim varsfile
-   49  kubectl create cm dbvars --from-env-file=varsfile
-   50  kubectl get cm
-   51  kubectl create deploy swiggydb --image=mariadb
-   52  kubectl delete pod swiggydb
-   53  kubectl delete deploy swiggydb
-   54  kubectl create deploy swiggydb --image=mariadb
-   55  kubectl get po
-   56  kubectl set env deploy swiggydb --from=configmap/dbvars
-   57  kubectl get po
-   58  kubectl get secret
-   59  kubectl create secret generic password --from-literal=ROOT_PASSWORD=raham123
-   60  kubectl get secrets
-   61  kubectl get secrets password -o yaml
-   62  echo "cmFoYW0xMjM=" | base64 --decode
-   63  history
+EX-2: MENTION LIMITS & REQUESTS = SAFE WAY
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movies
+  labels:
+    app: movies
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: movies
+  template:
+    metadata:
+      labels:
+        app: movies
+    spec:
+      containers:
+        - name: cont1
+          image: yashuyadav6339/movies:latest
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: "0.2"
+              memory: 100Mi
+
+EX-3: MENTION only REQUESTS =  NOT SAFE WAY
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movies
+  labels:
+    app: movies
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: movies
+  template:
+    metadata:
+      labels:
+        app: movies
+    spec:
+      containers:
+        - name: cont1
+          image: yashuyadav6339/movies:latest
+          resources:
+            requests:
+              cpu: "0.2"
+              memory: 100Mi
+
+
+ =======================================================================
+
+pv:
+
+Persistent means always available.
+PVs are independent they can exist even if no pod is using them.
+it is created by administrator or dynamically created by a storage class. 
+Once a PV is created, it can be bound to a Persistent Volume Claim (PVC), which is a request for storage by a pod.
+When a pod requests storage via a PVC, K8S will search for a suitable PV to satisfy the request. 
+PV is bound to the PVC and the pod can use the storage. 
+If no suitable PV is found, K8S will either dynamically create a new one (if the storage class supports dynamic provisioning) or the PVC will remain unbound.
+
+pvc:
+
+To use Pv we need to claim the volume using PVC.
+PVC request a PV with your desired specification (size, access, modes & speed etc) from k8s and onec a suitable PV is found it will bound to PVC
+After bounding is done to pod you can mount it as a volume.
+once userfinised its work the attached PV can be released the underlying PV can be reclaimed & recycled for future.
+
+RESTRICTIONS:
+1. Instances must be on same az as the ebs 
+2. EBS supports only a sinlge EC2 instance mounting
+
+pv.yml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  awsElasticBlockStore:
+    volumeID: vol-07e5c6c3fe273239f
+    fsType: ext4
+
+pvc.yml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+dep.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pvdeploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+    spec:
+      containers:
+      - name: raham
+        image: centos
+        command: ["/bin/bash", "-c", "sleep 10000"]
+        volumeMounts:
+        - name: my-pv
+          mountPath: "/tmp/persistent"
+      volumes:
+        - name: my-pv
+          persistentVolumeClaim:
+            claimName: my-pvc
+
+kubectl exec pvdeploy-86c99cf54d-d8rj4 -it -- /bin/bash
+cd /tmp/persistent/
+ls
+vim raham
+exit
+
+now delete the pod and new pod will created then in that pod you will see the same content.
+
+MULTI CONTAINER PODS:
+
+SIDE CAR:
+It creates a helper container to main container.
+main container will have application and helper container will do help for maiN container.
+
+Adapter Design Pattern:
+standardize the output pattern of main container.
+
+Ambassador Design Pattern:
+used to connect containers with the outside world
+
+Init Conatiner:
+it initialize the first work and exits later.
+
