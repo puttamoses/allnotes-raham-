@@ -1628,9 +1628,12 @@ configure servers
 deployment application on servers
 
 ANSIBLE:
-its a Configuration Management Tool.
-Configuration: Hardware and Software 
-Management: Pkgs update, installing, remove ----
+Ansible is a Configuration Management and Automation tool.
+Configuration includes: Hardware, Software.
+Hardware (servers, VMs, cloud instances)
+Software (OS settings, packages, services, users, files)
+Management includes:
+Installing packages, Updating packages, Removing packages, Starting / stopping services, Managing users, permissions, files, etc.
 Ansible is used to manage and work with multiple servers together.
 its a free and Opensource.
 it is used to automate the entire deployment process on multiple servers.
